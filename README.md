@@ -1,13 +1,13 @@
-# EuroScopePlugInSDK
-EuroScope's PlugIn SDK Documentation and Examples Archive
+# EuroScopePlugIn's SDK Documentation and Examples Archive
+A comprehensive collection of plug-in source codes and the available plug-in development documentation, all in one repository for learning and easy Copilot integration.
 
 ## <span style="color:darkkhaki">Preface
-For the best reading experience, clone the repository and open the markdown file previews with VSCode or Obsidian (Github doesn't fully support Markdown HTML integration in the browser.)
+For the best reading experience, clone the repository and open the markdown files with a markdown parser, like VSCode or Obsidian (Github doesn't fully support Markdown + HTML/CSS integration in the browser.)
 
 # Introduction
-In an effort to ease the learning process for developing plugins for [EuroScope](https://www.euroscope.hu/wp/), this repository will archive all relevant guides and example plugins (alongisde explanations). The original and main source of information for this Archive is the 2010 *"**Plug-in Developer's Guide** for verison 3.1d (r4)"*, which can be downloaded in its entirety [here](https://www.euroscope.hu/wp/documentation-download/); the contents of said file will be transcribed into a markdown file to allow integrating Copilot into future development as more examples get added, and any comments will be <span style="color : red">boxed in red </span>.
+To assist with the learning process of developing plugins for [EuroScope](https://www.euroscope.hu/wp/), this repository will archive relevant guides and example plugins (with added comments). The primary source for this archive is the 2010 *"**Plug-in Developer's Guide** for verison 3.1d (r4)"*, which can be downloaded in full [here](https://www.euroscope.hu/wp/documentation-download/); the contents of this guide were transcribed into a markdown file found in this repository under [Plug-in Developer's Guide](<Plug-in Developer's Guide.md>) to facilitate the integration of Copilot into future development. Any comments will be <span style="color : red">boxed in red </span>.
 
-## Disclaimer
+# Disclaimer
 All content originally cited from the *"**Plug-in Developer's Guide** for verison 3.1d (r4)"*, which has been transcribed into a markdown file with added notes by me, as well as the development header and associated development library, belong to the Euroscope team and were facilitated by *Gergely Csernák*. Proper credit should be given to them for these files.
 
 
