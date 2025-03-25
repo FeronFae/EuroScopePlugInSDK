@@ -10,6 +10,7 @@
     </style>
 </head>
 
+
 # The plug-in development
 The plug-in development offers the possibility to add your own code to EuroScope. In a plug-in you will be able to:
 - be informed about all the actions in the session (even in a playback one),
@@ -132,8 +133,92 @@ I added MFC with shared DLLs. That creates a smaller plug-in and uses the DLLs i
 Just after the project wizard some minor adjustments have to be made in the project settings. Change the followings in both debug and release versions:
 ![](/media/img3.png)
 In the General tab change the Character set from the default *Unicode* to Use *Multi-Byte Character Set*. Nor the VATSIM protocol, nor EuroScope supports Unicode characters at the moment.
-<div class="red-box"> After creating a new empty <b>CMake</b> project in VisualStudio (or VSCode), you will have to add the following arguments to your <code>CMakeLists.txt</code>: <pre><code>target_compile_definitions(${PROJECT_NAME} PRIVATE _MBCS)</pre></code>
-to add the <i>Multi-Byte Character Set</i> to your project DLL, and
-<pre><code>target_compile_definitions(${PROJECT_NAME} PRIVATE -UUNICODE -U_UNICODE)</pre></code>
-to remove the use of <i>Unicode</i> characters.
+<div class="red-box"> After creating a new empty <b>CMake</b> project in VisualStudio (or VSCode), you will have to add the following argument to your <code>CMakeLists.txt</code>: <pre><code>target_compile_definitions(${PROJECT_NAME} PRIVATE _MBCS)</code></pre>
+to add the <i>Multi-Byte Character Set</i> to your project DLL, which should automatically overwrite the default <code>_UNICODE</code> character set.
+</div><p></p>
+
+![](/media/img4.png)
+In the C++/General tab add the folder name where `EuroScopePlugIn.h` is located to the *Additional Include Directories*. That will enable to include it to your sources easily.
+<div class="red-box">
+As for <b>CMake</b>, just make sure you drag-and-drop the files from <code>%appdata$/EuroScope/PlugIn/</code> (as was previously stated) into your working directory. I like making my own separate <code>incl</code> and <code>lib</code> directories when managing multiple external header files and libraries. Having done this, just make sure your header file is imported in your main source file <code>main.cpp</code> and that the library is then linked with your DLL by importing it through your <code>CMakeLists.txt</code> as follows:
+<pre><code>add_library (EUROSCOPE_SDK STATIC IMPORTED)
+set_target_properties (
+	EUROSCOPE_SDK PROPERTIES 
+	IMPORTED_LOCATION 
+	"${CMAKE_CURRENT_SOURCE_DIR}/lib/EuroScopePlugInDll.lib"
+	)
+</code></pre>
+before your <code>add_library</code> DLL declaration, and then linking it with
+<pre><code>target_link_libraries (${PROJECT_NAME} PRIVATE EUROSCOPE_SDK)</code></pre>
+after your DLL declaration.
+</div><p></p>
+
+![](/media/img5.png)
+I found that disabling the *Treat wchar_t as Built-in Type* avoids some compatibility problems.
+<div class="red-box">
+Using <b>CMake</b> with the MSVC compiler, we have to declare this compilation setting in our <code>CMakeLists.txt</code> with:
+<pre><code>set(CMAKE_CXX_FLAGS "/Zc:wchar_t-")</code></pre>
+</div><p></p>
+
+![](/media/img6.png)
+Add the `EuroScopePlugInDll.lib` to the Linker/Input *Additional Dependencies*. That will link the EuroScope library to the plug-in.
+
+To enable intelli-sense working better, I suggest adding the `EuroScopePlugIn.h` to the project. Click on the `Header Files` with a right click and choose `Add/Existing Item`.
+
+That is enough for the base project. You can start and build the empty DLL files.
+
+<div class="red-box">
+Refer to the previous step where we added the header file and library to the project. Including the header file in our main source code and importing + linking the library into the <b>CMake</b> 
 </div>
+
+## An empty CPlugIn sub class
+<div class="red-box">This example can be thoroughly found using <b>CMake</b> under <code>/examples/PrecisionApproachPlugin/</code>.</div>
+
+To start creating the plug-in we first need to subclass the `CPlugIn` class. To do that start with the `Project/Add Class` menu:
+
+![](/media/img8.png)
+Click *Add*.
+
+![](/media/img9.png)
+Fill in the class name (here `CPrecisionApproachPlugIn`). I also changed the default file names adding a “2” postfix as the same file name is already used by the main code. My plug-in class has to be inherited from `EuroScopePlugIn::CPlugIn`.
+
+![](/media/img10.png)
+You might receive a warning message indicating that the base class is not yet found in the project. Just accept it, and continue with the class creation. We will add the necessary includes later.
+
+Open the `PrecisionApproachPlugIn2.h` and add the include statement just after the `#pragma once` statement:
+<pre><code>#include "EuroScopePlugIn.h"</code></pre>
+
+You may compile and build the solution again.
+
+## Adding the public exported functions
+
+Open the original `PrecisionApproachPlugIn.cpp` file. Include `PrecisionApproachPlugIn2.h` to be able to see your class:
+<pre><code>#include "PrecisionApproachPlugIn2.h"</code></pre>
+
+Copy the `EuroScopePlugInInit` and `EuroScopePlugInExit` declarations and extend it with a body. In the init just allocate a new instance while in the exit clean it up:
+<pre><code>void __declspec ( dllexport )
+    EuroScopePlugInInit ( EuroScopePlugIn :: CPlugIn ** ppPlugInInstance )
+{
+    // allocate
+    * ppPlugInInstance = pMyPlugIn =
+        new CPrecisionApproachPlugIn ;
+}
+
+void __declspec ( dllexport ) EuroScopePlugInExit ( void )
+{
+	delete pMyPlugIn ;
+}
+As there is no default constructor (without parameters) for CPlugIn you must specify them at the constructor of your class:
+
+CPrecisionApproachPlugIn::CPrecisionApproachPlugIn( void )
+   : CPlugIn ( EuroScopePlugIn::COMPATIBILITY_CODE, 
+                                   "Precision Approach Radar",
+               "1.0.0",
+               "Gergely Csernak",
+               "Free to be distributed as source code" )
+{
+	// add your initialization here
+}
+</code></pre>
+
+This is actually enough. The plug-is is ready, you can load it via the *Other Settings/Plug-ins* … menu. But practically it will not do anything.
