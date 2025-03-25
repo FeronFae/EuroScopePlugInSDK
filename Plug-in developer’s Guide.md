@@ -60,3 +60,51 @@ They will be references later in the functions.
 The `CPosition` class is designed to store latitude/longitude coordinates. For easy programming there are functions to calculate the distance and direction between two points. These functions are very new in EuroScope and based on the formulas I received from Juha Holopainen. So far I added to this environment only. I use a far less precise formulas inside EuroScope, but I am planning to change it. Therefore expect some differences between the values here and the values inside EuroScope.
 
 The direction returns the magnetic heading. The value calculated by the original function is corrected by the magnetic deviation defined in the main sectorfile.
+
+## CFlightPlanExtractedRoute class
+This class stores the extracted route of one flight plan. It is actually an array of structures that describes the route of the route point by point. All segments are classified by the AIRAC data if available. Sids and stars are also extracted.
+
+You can access to this data via a `CFlightPlan` class instance.
+
+## CFlightPlanPositionPredictions class
+This class contains an array of point predictions. Every point is one minute time from the previous and describes where the plane is expected (position and altitude) and what controller is online there.
+
+You can access to this data via a `CFlightPlan` class instance.
+
+## CRadarTargetPositionData class
+This class stores one position updates of the plane. The latest is of course the actual position of the aircraft while the previous ones can be used for history analysis. Only last 20 points are available.
+
+You can access to this data via a `CRadarTarget` or the `CFlightPlan` class instance.
+
+## CFlightPlanData class
+This class stores all the information about the flight plan.
+
+You can access to this data via a `CFlightPlan` class instance.
+
+## CFlightPlanControllerAssignedData class
+It is just a collection class. It allows you to access all the data that can be assigned to an aircraft by the controller.
+
+You can access to this data via a `CFlightPlan` class instance.
+
+## CFlightPlan class
+This is the main class to store information about a flight plans. You can select a flight plan or iterate all them via the `CPlugin` class instance. And you will be noticed whenever a flight plan update is received or when a controller assigned any kind of data.
+
+This class holds all the functions from the original `CAircraft` class that query or change the flight plan part.
+
+## CController class
+This class is used to access to the online controllers. Like the aircrafts you can select a controller or iterate all them via the `CPlugin` class instance. And you will be noticed whenever a position update is received.
+
+## CRadarScreen class
+This class is designed to hold information about a radar screen. When a new screen is created all plug-ins are offered to allocate a radar screen instance.
+
+This class has some virtual functions that might be overridden by the plug-in. These functions will be called for screen updates, data load and save.
+
+There is also a special function that can compile command line commands. The unrecognized command lines are first sent to the radar screens then to the plug-ins.
+
+## CFlightPlanList
+This class references to a flight plan list on the screen. You do not have access to the `SIL`, `SEL` and `DEP` lists, but you can make your own one. You can define the columns to be displayed and feed the list with aircrafts. The new example program creates a holding list.
+
+## CPlugIn class
+This is the main plug-in class. All plug-ins have to subclass this one and allocate an instance in the initialization call. All subsequent interaction between EuroScope and the plug-in will use this instance.
+
+This function has many virtual functions that might be overridden by the plug-in.
