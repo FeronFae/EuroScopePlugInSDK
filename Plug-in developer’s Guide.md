@@ -4,8 +4,8 @@
     <title>Red Boxed Text</title>
     <style>
         .red-box {
-            border: 2px solid red; /* Red border */
-            padding: 10px;          /* Space inside the box */
+            border: 2px solid red;
+            padding: 10px;
         }
     </style>
 </head>
@@ -28,7 +28,6 @@ All the interfaces in the plug-in development environment are built on C++ and s
 All classes are designed to store only on or two pointers, but no more member variables. This allows me to change the underlying structure hidden from the plug-ins and still possible to load the old plug-ins.
 
 # What is the development environment?
-
 The development environment is actually no more than two files:
 - `EuroScopePlugIn.h` – This file contains all the class definitions you need for the plug-in. Just include it into your sources and implement some functions and subclasses.
 - `EuroScopePlugInDll.lib` – This is auto loading DLL library. It contains all the exported features from EuroScope.exe. Just link this library to your DLL.
@@ -108,3 +107,33 @@ This class references to a flight plan list on the screen. You do not have acces
 This is the main plug-in class. All plug-ins have to subclass this one and allocate an instance in the initialization call. All subsequent interaction between EuroScope and the plug-in will use this instance.
 
 This function has many virtual functions that might be overridden by the plug-in.
+
+## Global exported functions
+There are two global functions that you **MUST** export from your DLL. When EuroScope loads the DLL it looks for the `EuroScopePlugInInit` and `EuroScopePlugInExit` functions. They must be implemented and declared as exported (as you see them in the header file).
+
+Just after the DLL loading EuroScope calls the `EuroScopePlugInInit` function. There you must allocate and return the instance of you `CPlugIn` class. Just before unload EuroScope calls the `EuroScopePlugInExit` function to clean up all local variables.
+
+# Example plug-in step-by-step
+Here I describe all the steps you need to build your own plug-in. In the example I will use the “Precision Approach Plug-in” that is also available as source code for further exploration.
+
+<div class="red-box"> There will be thoroughly commented examples compiled using <b>CMake</b> under the <code>examples</code> subdirectory for you to find, including the following presented!</div>
+
+## New DLL project
+<div class="red-box"> The following instructions are meant for a Microsoft Visual Stuio project, I will append the <b>Cmake</b> under each step, when necessary.</div>
+
+The first step is to create a new project that creates the DLL:
+
+![](/media/img1.png)
+Here I started with an MFC DLL that is the convenient for me, but you can start with a DLL without MFC support.
+
+![](/media/img2.png)
+I added MFC with shared DLLs. That creates a smaller plug-in and uses the DLLs installed by EuroScope.
+
+Just after the project wizard some minor adjustments have to be made in the project settings. Change the followings in both debug and release versions:
+![](/media/img3.png)
+In the General tab change the Character set from the default *Unicode* to Use *Multi-Byte Character Set*. Nor the VATSIM protocol, nor EuroScope supports Unicode characters at the moment.
+<div class="red-box"> After creating a new empty <b>CMake</b> project in VisualStudio (or VSCode), you will have to add the following arguments to your <code>CMakeLists.txt</code>: <pre><code>target_compile_definitions(${PROJECT_NAME} PRIVATE _MBCS)</pre></code>
+to add the <i>Multi-Byte Character Set</i> to your project DLL, and
+<pre><code>target_compile_definitions(${PROJECT_NAME} PRIVATE -UUNICODE -U_UNICODE)</pre></code>
+to remove the use of <i>Unicode</i> characters.
+</div>
