@@ -208,10 +208,9 @@ Copy the `EuroScopePlugInInit` and `EuroScopePlugInExit` declarations and extend
 void __declspec ( dllexport ) EuroScopePlugInExit ( void )
 {
 	delete pMyPlugIn ;
-}
+}</code></pre>
 As there is no default constructor (without parameters) for CPlugIn you must specify them at the constructor of your class:
-
-CPrecisionApproachPlugIn::CPrecisionApproachPlugIn( void )
+<pre><code>CPrecisionApproachPlugIn::CPrecisionApproachPlugIn( void )
    : CPlugIn ( EuroScopePlugIn::COMPATIBILITY_CODE, 
                                    "Precision Approach Radar",
                "1.0.0",
