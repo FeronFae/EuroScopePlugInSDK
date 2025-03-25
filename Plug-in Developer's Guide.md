@@ -140,7 +140,7 @@ to add the <i>Multi-Byte Character Set</i> to your project DLL, which should aut
 ![](/media/img4.png)
 In the C++/General tab add the folder name where `EuroScopePlugIn.h` is located to the *Additional Include Directories*. That will enable to include it to your sources easily.
 <div class="red-box">
-As for <b>CMake</b>, just make sure you drag-and-drop the files from <code>%appdata$/EuroScope/PlugIn/</code> (as was previously stated) into your working directory. I like making my own separate <code>incl</code> and <code>lib</code> directories when managing multiple external header files and libraries. Having done this, just make sure your header file is imported in your main source file <code>main.cpp</code> and that the library is then linked with your DLL by importing it through your <code>CMakeLists.txt</code> as follows:
+As for <b>CMake</b>, just make sure you drag-and-drop the files from <code>%appdata$/EuroScope/PlugIn/</code> (as was previously stated) into your working directory. I like making my own separate <code>include</code> and <code>lib</code> directories when managing multiple external header files and libraries. Having done this, just make sure your header file is imported in your main source file <code>main.cpp</code> and that the library is then linked with your DLL by importing it through your <code>CMakeLists.txt</code> as follows:
 <pre><code>add_library (EUROSCOPE_SDK STATIC IMPORTED)
 set_target_properties (
 	EUROSCOPE_SDK PROPERTIES 

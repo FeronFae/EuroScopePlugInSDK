@@ -1,0 +1,4 @@
+# ninja log v6
+5	151	7646276022147686	CMakeFiles/TestPlugin.dir/TestPlugin.cpp.obj	bb254542f924b46d
+152	367	7646276025597030	TestPlugin.dll	29dfcb796e18d0fa
+152	367	7646276025597030	TestPlugin.lib	29dfcb796e18d0fa

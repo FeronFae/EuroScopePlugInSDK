@@ -1,0 +1,3 @@
+C:/Users/rober/Desktop/EuroScope Plugin/EuroScopePlugInSDK/examples/PrecisionApproachPlugIn/out/build/x86-debug/CMakeFiles/TestPlugin.dir
+C:/Users/rober/Desktop/EuroScope Plugin/EuroScopePlugInSDK/examples/PrecisionApproachPlugIn/out/build/x86-debug/CMakeFiles/edit_cache.dir
+C:/Users/rober/Desktop/EuroScope Plugin/EuroScopePlugInSDK/examples/PrecisionApproachPlugIn/out/build/x86-debug/CMakeFiles/rebuild_cache.dir

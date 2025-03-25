@@ -1,0 +1,9 @@
+EXPORTS 
+	??_R0?AVCPlugIn@EuroScopePlugIn@@@8 	 DATA
+	??_R0?AVCPrecisionApproachPlugIn@@@8 	 DATA
+	?myPluginInstance@@3PAVCPrecisionApproachPlugIn@@A 	 DATA
+	??0CPrecisionApproachPlugIn@@QAE@XZ
+	??1CPrecisionApproachPlugIn@@UAE@XZ
+	??_7CPrecisionApproachPlugIn@@6B@
+	?EuroScopePlugInExit@@YAXXZ
+	?EuroScopePlugInInit@@YAXPAPAVCPlugIn@EuroScopePlugIn@@@Z
