@@ -1,0 +1,3 @@
+C:/Users/rober/Desktop/EuroScope Plugin/EuroScopePlugInSDK/examples/CRadarPlugIn/out/build/x64-debug/CMakeFiles/CPrecisionApproachScreen.dir
+C:/Users/rober/Desktop/EuroScope Plugin/EuroScopePlugInSDK/examples/CRadarPlugIn/out/build/x64-debug/CMakeFiles/edit_cache.dir
+C:/Users/rober/Desktop/EuroScope Plugin/EuroScopePlugInSDK/examples/CRadarPlugIn/out/build/x64-debug/CMakeFiles/rebuild_cache.dir
