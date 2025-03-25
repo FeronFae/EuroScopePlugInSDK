@@ -169,10 +169,11 @@ That is enough for the base project. You can start and build the empty DLL files
 
 <div class="red-box">
 Refer to the previous step where we added the header file and library to the project. Including the header file in our main source code and importing + linking the library into the <b>CMake</b> 
-</div>
+</div><p></p>
+
+<div class="red-box">All the following examples can be thoroughly found built using <b>CMake</b> under <code>/examples/PrecisionApproachPlugin/</code>.</div>
 
 ## An empty CPlugIn sub class
-<div class="red-box">This example can be thoroughly found using <b>CMake</b> under <code>/examples/PrecisionApproachPlugin/</code>.</div>
 
 To start creating the plug-in we first need to subclass the `CPlugIn` class. To do that start with the `Project/Add Class` menu:
 
@@ -222,3 +223,209 @@ CPrecisionApproachPlugIn::CPrecisionApproachPlugIn( void )
 </code></pre>
 
 This is actually enough. The plug-is is ready, you can load it via the *Other Settings/Plug-ins* … menu. But practically it will not do anything.
+
+## My own radar screen
+In this example I will create a complete new radar display. So I create a new class inherited from `CRadarScreen`. Use the add class wizard again:
+
+![](/media/img11.png)
+Inherit from `EuroScopePlugIn::CRadarScreen`.
+
+Add some data (description, threshold coordinates, altitude, runway heading and glide slope angle). I would like to store them in the ASR file:
+<pre><code>CString     m_Description ;
+CString     m_Latitude, m_Longitude ;
+int         m_Altitude ;
+int         m_Heading ;
+double      m_Slope ;</code></pre>
+I also initialized these variables in the constructor to LHBP 31R:
+<pre><code>m_Description = "LHBP 31R PAR" ;
+m_Latitude    = "N047.25.24.615" ;
+m_Longitude   = "E019.17.35.260" ;
+m_Altitude    = 550 ;
+m_Heading     = 310 ;
+m_Slope       = 2.5 ;</code></pre>
+There are four virtual functions of the `CRadarScreen` that will be overridden in my example.
+
+### OnAsrContentLoaded
+In this function I load my variables from the ASR file. If they exist there then the default values are change.
+
+### OnAsrContentToBeSaved
+This function is called by EuroScope when an ASR file is to be closed. Here I save back all the values to the ASR file. The new values are tested against the original ones and the user will be prompted to save the changes or not. You can save your actual values without testing if the values are different or not, EuroScope will test it.
+
+### OnRefresh
+This is the most important function that refreshes the content of the screen. As this is my own display type it really does not matter in which phase I draw the content. Just be sure to refresh it only one time.
+Most of the code is not EuroScope specific here. The only interesting code is the aircraft loop:
+<pre><code>EuroScopePlugIn :: CRadarTarget rt ;
+for ( rt = GetPlugIn () -> RadarTargetSelectFirst () ;
+      rt.IsValid () ;
+      rt = GetPlugIn () -> RadarTargetSelectNext ( rt ))</code></pre>
+
+### OnCompileCommand
+This function tests if the command is “.par”, and if so it opens a dialog box to make the setup. If the OK was pressed at the end then the new values are saved.
+
+### OnCompileCommand
+It is a must-be-implemented function. If you have nothing to do here, then add as an inline to the header:<pre><code>inline  virtual void    OnAsrContentToBeClosed ( void )
+    {
+    delete this ;
+    } ;</code></pre>
+
+### Register and create the radar screen
+We have the complete radar screen now. The only step is missing is to register it, and when a new screen is created then allocate a new instance of my radar screen. I did both in the `CPrecisionApproachPlugIn` class.
+
+In the constructor I registered my own view type:
+<pre><code>RegisterDisplayType (
+    "Precision Approach View",
+    false,        // no radar content here
+    false,        // no geo referencing
+    true,         // it can be saved to an ASR file
+    true ) ;      // can be created</code></pre>
+
+This will register the “Precision Approach View” type radar screens. In the *Sector file/New* … menu you will find a “New Precision Approach View” menu item too. The new radar screen does not need normal radar content, not geo referenced (latitude and longitude has no meaning there), can be created and saved.
+
+When the user asks for a *New Precision Approach View* the `OnRadarScreenCreated` of my plug-in instance is called. There I simply allocate a new instance of my radar. This instance will be called to setup and display the content.
+<pre><code>if ( strcmp ( sDisplayName, "Precision Approach View" ))
+    return NULL ;
+else
+    return new CPrecisionApproachScreen ;</code></pre>
+
+## Another example plug-in
+The following codes are from the holding list plug-in. Here I will not describe all the lines, just the interesting ones that are missing from the previous.
+
+### My TAG items and item functions
+Some constant definitions. The item codes:
+<pre><code>const   int     TAG_ITEM_HOLDING_NAME       = 1 ;
+const   int     TAG_ITEM_HOLDING_TIME       = 2 ;
+const   int     TAG_ITEM_REMAINING_TIME     = 3 ;</code></pre>
+The functions (the first two are for the item functions, the last three is for the popup things):
+<pre><code>const   int     TAG_FUNC_HOLDING_EDIT       = 1 ;
+const   int     TAG_FUNC_HOLDING_WAIT       = 2 ;
+const   int     TAG_FUNC_HOLDING_EDITOR     = 10 ;
+const   int     TAG_FUNC_HOLDING_WAIT_LIST  = 11 ;
+const   int     TAG_FUNC_HOLDING_WAIT_CLEAR = 12 ;</code></pre>
+Then register my TAG items:
+<pre><code>RegisterTagItemType ( "Holding point name",
+                      TAG_ITEM_HOLDING_NAME ) ;
+RegisterTagItemType ( "Holding time",
+                      TAG_ITEM_HOLDING_TIME ) ;
+RegisterTagItemType ( "Remaining holding time",
+                      TAG_ITEM_REMAINING_TIME ) ;</code></pre>
+And also my TAG functions:
+<pre><code>RegisterTagItemFunction ( "Holding name editor",
+                          TAG_FUNC_HOLDING_EDIT ) ;
+RegisterTagItemFunction ( "Holding time popup",
+                          TAG_FUNC_HOLDING_WAIT ) ;</code></pre>
+And finally I need my own AC list. I have to save the reference to the list:
+<pre><code>m_HoldingList = RegisterAcList ( "Holding list" ) ;</code></pre>
+The registration also loads the user saved setup from the settings file. If empty or if we want to override it, define my own columns:
+<pre><code>m_HoldingList.AddColumnDefinition (
+   "C/S",
+   6,
+   false,
+   NULL, EuroScopePlugIn :: TAG_ITEM_TYPE_CALLSIGN,
+   NULL, EuroScopePlugIn :: TAG_ITEM_FUNCTION_NO,
+   NULL, EuroScopePlugIn :: TAG_ITEM_FUNCTION_NO ) ;
+m_HoldingList.AddColumnDefinition (
+   "REM",
+   6,
+   true,
+   MY_PLUGIN_NAME, TAG_ITEM_REMAINING_TIME,
+   MY_PLUGIN_NAME, TAG_FUNC_HOLDING_WAIT,
+   NULL, EuroScopePlugIn :: TAG_ITEM_FUNCTION_NO ) ;
+</code></pre>
+
+### Providing the TAG items
+Override the `OnGetTagItem` to provide data for the defined item:
+<pre><code>case TAG_ITEM_HOLDING_NAME :
+    strcpy ( sItemString,
+             m_HoldingData [ idx ].m_PointName ) ;
+    break ;
+case TAG_ITEM_HOLDING_TIME :
+    sec = (int) ( time ( NULL ) -
+                  m_HoldingData [ idx ].m_Entered ) ;
+    sprintf ( sItemString,
+              "%02d:%02d",
+              sec / 60, sec % 60 ) ;
+    break ;</code></pre>
+
+And in the last change the color to EMG color if the time is over:
+<pre><code>if ( m_HoldingData [ idx ].m_Leave )
+    {
+    if ( m_HoldingData [ idx ].m_Leave >= time ( NULL ))
+        sec = (int) ( m_HoldingData [ idx ].m_Leave -
+                      time ( NULL )) ;
+    else
+        {
+        sec = (int) ( time ( NULL ) -
+                      m_HoldingData [ idx ].m_Leave ) ;
+        * pColorCode =
+            EuroScopePlugIn :: TAG_COLOR_EMERGENCY ;
+        }
+    sprintf ( sItemString,
+              "%02d:%02d",
+              sec / 60, sec % 60 ) ;
+    }</code></pre>
+
+### Handle function calls
+The calls may com from TAG items. It is from a TAG or from an AC list element. When clicking on a holding name, then allow editing it. And when the editing is finished, then save the result:
+<pre><code>case TAG_FUNC_HOLDING_EDIT : // TAG function
+    OpenPopupEdit ( Area,
+                    TAG_FUNC_HOLDING_EDITOR,
+                    m_HoldingData [ idx ].m_PointName ) ;
+    break ;
+case TAG_FUNC_HOLDING_EDITOR : // when finished editing
+    m_HoldingData [ idx ].m_PointName = sItemString ;
+    m_HoldingData [ idx ].m_PointName.MakeUpper () ;
+    m_HoldingData [ idx ].m_Hard      = true ;
+    break ;</code></pre>
+
+When clicking on the remaining time item, then popup a list with some minutes available and a fixed element at the bottom to clear the downcounter. When something is selected, then save the value:
+<pre><code>case TAG_FUNC_HOLDING_WAIT : // TAG function
+    OpenPopupList ( Area, "Wait", 1 ) ;
+    for ( i = 90 ; i > 30 ; i -= 10 )
+        {
+        str.Format ( "%d", i ) ;
+        AddPopupListElement (
+            str,            "",
+            TAG_FUNC_HOLDING_WAIT_LIST ) ;
+        }
+…
+    for ( ; i > 0 ; i -- )
+        {
+        str.Format ( "%d", i ) ;
+        AddPopupListElement (
+            str,
+            "",
+            TAG_FUNC_HOLDING_WAIT_LIST,
+            i == 10 ) ;
+        }
+    AddPopupListElement (
+        "Clear",
+        "",
+        TAG_FUNC_HOLDING_WAIT_CLEAR,
+        false,
+        EuroScopePlugIn :: POPUP_ELEMENT_NO_CHECKBOX,
+        m_HoldingData [ idx ].m_Leave == 0,
+        true ) ;
+        break ;
+case TAG_FUNC_HOLDING_WAIT_LIST :
+    // a value is selected from the popup list
+    m_HoldingData [ idx ].m_Leave =
+        time ( NULL ) + 60 * atoi ( sItemString ) ;
+    break ;
+case TAG_FUNC_HOLDING_WAIT_CLEAR :
+    // clear the waiting time
+    m_HoldingData [ idx ].m_Leave = 0 ;
+    break ;</code></pre>
+
+# Debugging a plug-in
+It is possible to debug a plug-in. In the project properties dialog specify EuroScope as the command to be executed:
+
+![](/media/img12.png)
+Then go and load the debug version of your DLL. You will be able to define breakpoints inside your DLL and debug as normal.
+
+**Important: Never debug your plug-in when connected to VATSIM in an online session.** The plug-in runs in the same thread as the rest of EuroScope. When you stop in a breakpoint the whole process is stopped. That may causes too big delay in processing the network protocol messages. That may cause problems in the server connection, that is strictly forbidden in VATSIM. Please, make a log from your session and use a playback session when debugging. That is also better to be able to reproduce your test cases.
+
+Happy plug-in development.
+
+*Gergely Csernák*
+
+**EuroScope developer**
